@@ -1,0 +1,670 @@
+/*
+ * In page comments: the look.
+ *
+ * Every colour and face comes from a token with a value built in, so the
+ * sheet works on its own. Give a token a value of your own to fit your site:
+ *
+ *   :root {
+ *     --fb-ink-800: #101a2c;   the panel ground
+ *     --fb-accent: #35c2b1;    a proposal that waits for a check
+ *     --fb-resolved: #a78bfa; a comment that was accepted
+ *     --fb-paper: #e7ecf3;     the text
+ *   }
+ *
+ * Class names all start with feedback- or fb-, so they do not meet the names
+ * of the site around them.
+ */
+
+/* ------------------------------------------------------------------ */
+/* Comment picker                                                      */
+/* ------------------------------------------------------------------ */
+
+body.feedback-armed,
+body.feedback-armed * {
+  cursor: crosshair !important;
+}
+
+.feedback-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+}
+
+.feedback-layer > * {
+  pointer-events: auto;
+}
+
+.feedback-dock {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  max-width: calc(100vw - 12px);
+}
+
+/* Once it is pulled about, the place comes from left and top. */
+.feedback-dock.is-moved {
+  right: auto;
+  bottom: auto;
+}
+
+.feedback-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fb-grip {
+  padding: 7px 9px;
+  color: var(--fb-muted, #93a6c4);
+  line-height: 1;
+  cursor: grab;
+  touch-action: none;
+}
+
+.fb-grip:active {
+  cursor: grabbing;
+}
+
+.fb-btn {
+  padding: 7px 12px;
+  border: 1.5px solid var(--fb-line, #33507f);
+  border-radius: 9px;
+  background: var(--fb-ink-600, #1d2e4a);
+  color: var(--fb-paper, #e7ecf3);
+  font-family: var(--fb-display, 'Space Grotesk', 'Trebuchet MS', system-ui, sans-serif);
+  font-size: 12.5px;
+  cursor: pointer;
+}
+
+.fb-btn:hover:not(:disabled) {
+  background: var(--fb-ink-500, #27395a);
+}
+
+.fb-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* The count circle, with room for a badge on each of its top corners. */
+.fb-round-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.fb-corner {
+  position: absolute;
+  top: -6px;
+  width: 17px;
+  height: 17px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1.5px solid #0e1622;
+  font-family: var(--fb-mono, 'IBM Plex Mono', 'SFMono-Regular', ui-monospace, monospace);
+  font-size: 9.5px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* How many comments a worker has picked up. */
+.fb-corner-working {
+  left: -6px;
+  background: var(--fb-warn, #6b4a12);
+  border-color: var(--fb-warn-line, #b98a2a);
+  color: var(--fb-paper, #e7ecf3);
+}
+
+/* How many comments carry a fix waiting on a check. */
+.fb-corner-review {
+  right: -6px;
+  background: var(--fb-accent, #35c2b1);
+  color: var(--fb-accent-ink, #0e1622);
+}
+
+.fb-primary {
+  background: var(--fb-accent, #35c2b1);
+  border-color: #0e1622;
+  color: var(--fb-accent-ink, #0e1622);
+  font-weight: 700;
+}
+
+.fb-main {
+  padding: 10px 16px;
+  border-radius: 999px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+}
+
+.fb-main.is-armed {
+  background: var(--fb-hot, #ff6b52);
+  border-color: #0e1622;
+  color: #17110f;
+  font-weight: 700;
+}
+
+.fb-round {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border-radius: 50%;
+  font-family: var(--fb-mono, 'IBM Plex Mono', 'SFMono-Regular', ui-monospace, monospace);
+}
+
+.feedback-pin {
+  position: fixed;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  margin: -11px 0 0 -11px;
+  border: 2px solid #0e1622;
+  border-radius: 50% 50% 50% 2px;
+  background: var(--fb-hot, #ff6b52);
+  color: #17110f;
+  font-family: var(--fb-mono, 'IBM Plex Mono', 'SFMono-Regular', ui-monospace, monospace);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: grab;
+  touch-action: none;
+  transition: opacity 0.15s ease;
+}
+
+.feedback-pin:active {
+  cursor: grabbing;
+}
+
+.feedback-box {
+  position: fixed;
+  width: 300px;
+  padding: 12px;
+  border: 1.5px solid var(--fb-accent, #35c2b1);
+  border-radius: 12px;
+  background: var(--fb-ink-800, #101a2c);
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.55);
+}
+
+.feedback-target {
+  cursor: grab;
+  touch-action: none;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0 0 8px;
+  font-family: var(--fb-mono, 'IBM Plex Mono', 'SFMono-Regular', ui-monospace, monospace);
+  font-size: 11px;
+  color: var(--fb-muted, #93a6c4);
+}
+
+.feedback-box textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1.5px solid var(--fb-ink-500, #27395a);
+  border-radius: 8px;
+  background: var(--fb-ink-900, #0a1120);
+  color: var(--fb-paper, #e7ecf3);
+  font-family: var(--fb-body, 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif);
+  font-size: 13px;
+  resize: vertical;
+}
+
+.feedback-check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 8px 0;
+  font-size: 11.5px;
+  color: var(--fb-muted, #93a6c4);
+}
+
+.feedback-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.feedback-list {
+  width: 330px;
+  max-height: 50vh;
+  overflow-y: auto;
+  padding: 12px;
+  border: 1.5px solid var(--fb-ink-500, #27395a);
+  border-radius: 12px;
+  background: var(--fb-ink-800, #101a2c);
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.55);
+}
+
+.feedback-list header {
+  cursor: grab;
+  touch-action: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-family: var(--fb-display, 'Space Grotesk', 'Trebuchet MS', system-ui, sans-serif);
+}
+
+.feedback-list ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.feedback-list li {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: start;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid var(--fb-ink-500, #27395a);
+  border-radius: 9px;
+}
+
+.feedback-list p {
+  margin: 0 0 4px;
+  font-size: 12.5px;
+}
+
+.feedback-list code {
+  font-family: var(--fb-mono, 'IBM Plex Mono', 'SFMono-Regular', ui-monospace, monospace);
+  font-size: 10.5px;
+  color: var(--fb-muted, #93a6c4);
+  overflow-wrap: anywhere;
+}
+
+.feedback-index {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--fb-hot, #ff6b52);
+  color: #17110f;
+  font-family: var(--fb-mono, 'IBM Plex Mono', 'SFMono-Regular', ui-monospace, monospace);
+  font-size: 11px;
+}
+
+.feedback-empty {
+  margin: 0;
+  font-size: 12px;
+  color: var(--fb-muted, #93a6c4);
+}
+
+.feedback-note {
+  position: fixed;
+  right: 16px;
+  bottom: 62px;
+  margin: 0;
+  padding: 8px 12px;
+  border: 1.5px solid var(--fb-accent, #35c2b1);
+  border-radius: 9px;
+  background: var(--fb-ink-800, #101a2c);
+  font-size: 12px;
+}
+
+/* Review loop: a proposal waits for the person to accept or answer. */
+
+.feedback-pin.is-proposed {
+  background: var(--fb-accent, #35c2b1);
+  color: var(--fb-accent-ink, #0e1622);
+  animation: pin-wait 1.6s ease-in-out infinite;
+}
+
+@keyframes pin-wait {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(53, 194, 177, 0.55);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(53, 194, 177, 0);
+  }
+}
+
+.feedback-list li.is-proposed {
+  border-color: var(--fb-accent, #35c2b1);
+  background: rgba(53, 194, 177, 0.07);
+}
+
+.feedback-index.is-proposed {
+  background: var(--fb-accent, #35c2b1);
+  color: var(--fb-accent-ink, #0e1622);
+}
+
+.feedback-body {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.feedback-proposal {
+  margin: 0;
+  padding: 7px 8px;
+  border-left: 3px solid var(--fb-accent, #35c2b1);
+  border-radius: 0 7px 7px 0;
+  background: rgba(53, 194, 177, 0.1);
+  font-size: 12.5px;
+}
+
+.feedback-proposal strong {
+  display: block;
+  margin-bottom: 2px;
+  font-family: var(--fb-display, 'Space Grotesk', 'Trebuchet MS', system-ui, sans-serif);
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fb-accent, #35c2b1);
+}
+
+.feedback-body textarea {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1.5px solid var(--fb-ink-500, #27395a);
+  border-radius: 8px;
+  background: var(--fb-ink-900, #0a1120);
+  color: var(--fb-paper, #e7ecf3);
+  font-family: var(--fb-body, 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif);
+  font-size: 12.5px;
+  resize: vertical;
+}
+
+.feedback-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.feedback-state {
+  margin-right: auto;
+  font-family: var(--fb-mono, 'IBM Plex Mono', 'SFMono-Regular', ui-monospace, monospace);
+  font-size: 10.5px;
+  color: var(--fb-muted, #93a6c4);
+}
+
+.feedback-thread {
+  list-style: none;
+  margin: 2px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.feedback-thread li {
+  display: block;
+  padding: 4px 6px;
+  border: 0;
+  border-left: 2px solid var(--fb-ink-500, #27395a);
+  border-radius: 0;
+  font-size: 11.5px;
+  color: var(--fb-muted, #93a6c4);
+}
+
+.feedback-thread li span {
+  margin-right: 5px;
+  font-family: var(--fb-mono, 'IBM Plex Mono', 'SFMono-Regular', ui-monospace, monospace);
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.feedback-thread li.from-claude {
+  border-left-color: var(--fb-accent, #35c2b1);
+}
+
+.fb-round {
+  position: relative;
+}
+
+/* ------------------------------------------------------------------ */
+/* Fix preview switch in the comment panel                             */
+/* ------------------------------------------------------------------ */
+
+.feedback-proposal {
+  cursor: pointer;
+}
+
+.feedback-fix {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--fb-mono, 'IBM Plex Mono', 'SFMono-Regular', ui-monospace, monospace);
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--fb-muted, #93a6c4);
+}
+
+.feedback-fix .fb-switch {
+  position: relative;
+  width: 30px;
+  height: 16px;
+  padding: 0;
+  border: 1.5px solid var(--fb-ink-500, #27395a);
+  border-radius: 999px;
+  background: var(--fb-ink-900, #0a1120);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.feedback-fix .fb-switch::after {
+  content: '';
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--fb-muted, #93a6c4);
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.feedback-fix .fb-switch[aria-checked='true'] {
+  border-color: var(--fb-accent, #35c2b1);
+  background: rgba(53, 194, 177, 0.25);
+}
+
+.feedback-fix .fb-switch[aria-checked='true']::after {
+  transform: translateX(14px);
+  background: var(--fb-accent, #35c2b1);
+}
+
+.feedback-fix .fb-fixlabel {
+  color: var(--fb-paper, #e7ecf3);
+}
+
+.feedback-fix.is-off .fb-fixlabel {
+  color: #e0a35a;
+}
+
+/* The pin says when its fix is switched off. */
+.feedback-pin.is-preview-off {
+  background: #e0a35a;
+  color: #21160a;
+  animation: none;
+}
+
+/* A comment made on another screen still shows in the panel, quietly. */
+.feedback-list li.is-elsewhere {
+  opacity: 0.5;
+}
+
+.feedback-screen {
+  font-family: var(--fb-mono, 'IBM Plex Mono', 'SFMono-Regular', ui-monospace, monospace);
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--fb-muted, #93a6c4);
+}
+
+.feedback-where {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.fb-go {
+  padding: 1px 8px;
+  font-size: 10.5px;
+}
+
+/* Keeps Go and Dismiss together at a row's end, whatever else shares it. */
+.feedback-row-end {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Dismiss: quiet on purpose, so it never reads as the main action. */
+.fb-dismiss {
+  padding: 1px 6px;
+  border: 0;
+  background: none;
+  color: var(--fb-muted, #93a6c4);
+  font-family: var(--fb-display, 'Space Grotesk', 'Trebuchet MS', system-ui, sans-serif);
+  font-size: 10.5px;
+  cursor: pointer;
+}
+
+.fb-dismiss:hover {
+  color: var(--fb-hot, #ff6b52);
+}
+
+.fb-dismiss.is-confirming {
+  color: var(--fb-hot, #ff6b52);
+  font-weight: 700;
+}
+
+/* A divider naming the screen the rows under it belong to. */
+.feedback-list li.feedback-group {
+  display: block;
+  padding: 3px 2px 0;
+  border: 0;
+  font-family: var(--fb-mono, 'IBM Plex Mono', 'SFMono-Regular', ui-monospace, monospace);
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--fb-muted, #93a6c4);
+}
+
+/* A comment somebody has picked up, before any fix is proposed. */
+.feedback-working {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 12px;
+  color: var(--fb-muted, #93a6c4);
+}
+
+.fb-pulse {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--fb-accent, #35c2b1);
+  animation: pin-wait 1.6s ease-in-out infinite;
+}
+
+/* A comment reached by its own "Go" button, or named in the address bar. */
+.feedback-list li.is-highlighted {
+  opacity: 1;
+  border-color: var(--fb-accent, #35c2b1);
+  box-shadow: 0 0 0 1px var(--fb-accent, #35c2b1);
+}
+
+.feedback-pin.is-highlighted {
+  animation: pin-wait 1.6s ease-in-out infinite;
+  box-shadow: 0 0 0 4px rgba(53, 194, 177, 0.35);
+}
+
+/* ------------------------------------------------------------------ */
+/* Resolved comments, collapsed at the bottom of the list              */
+/* ------------------------------------------------------------------ */
+
+.feedback-resolved {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--fb-ink-500, #27395a);
+}
+
+.feedback-resolved-header {
+  width: 100%;
+  padding: 4px 2px;
+  border: 0;
+  background: none;
+  color: var(--fb-muted, #93a6c4);
+  font-family: var(--fb-mono, 'IBM Plex Mono', 'SFMono-Regular', ui-monospace, monospace);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-align: left;
+  cursor: pointer;
+}
+
+.feedback-resolved-header:hover {
+  color: var(--fb-paper, #e7ecf3);
+}
+
+.feedback-resolved-list {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.feedback-resolved-row {
+  display: block;
+  padding: 0;
+  border: 1px solid var(--fb-resolved, #a78bfa);
+  border-radius: 8px;
+  background: rgba(167, 139, 250, 0.07);
+  opacity: 0.7;
+}
+
+.feedback-resolved-row.is-highlighted {
+  opacity: 1;
+  border-color: var(--fb-accent, #35c2b1);
+  box-shadow: 0 0 0 1px var(--fb-accent, #35c2b1);
+}
+
+/* The number marker on a resolved row: its own tone, not the open red. */
+.feedback-index.is-resolved {
+  background: var(--fb-resolved, #a78bfa);
+  color: var(--fb-resolved-ink, #1c1330);
+}
+
+.feedback-resolved-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  cursor: pointer;
+}
+
+.feedback-resolved-screen {
+  flex-shrink: 0;
+  font-family: var(--fb-mono, 'IBM Plex Mono', 'SFMono-Regular', ui-monospace, monospace);
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fb-muted, #93a6c4);
+}
+
+.feedback-resolved-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+}
+
+.feedback-resolved-full {
+  padding: 0 8px 8px;
+}

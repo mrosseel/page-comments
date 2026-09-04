@@ -1,0 +1,97 @@
+{
+  "name": "@mrosseel/page-comments",
+  "version": "0.1.0",
+  "description": "In-page comments for a React site: pick a spot, write a note, see a proposed fix on and off, accept it or send it back.",
+  "keywords": [
+    "react",
+    "comments",
+    "annotation",
+    "feedback",
+    "design-review",
+    "vite-plugin"
+  ],
+  "license": "MIT",
+  "author": "Mike Rosseel",
+  "homepage": "https://github.com/mrosseel/page-comments#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mrosseel/page-comments.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mrosseel/page-comments/issues"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./fixes": {
+      "types": "./dist/fixes.d.ts",
+      "default": "./dist/fixes.js"
+    },
+    "./useDraggable": {
+      "types": "./dist/useDraggable.d.ts",
+      "default": "./dist/useDraggable.js"
+    },
+    "./styles.css": "./styles.css",
+    "./collector": {
+      "types": "./collector.d.mts",
+      "default": "./collector.mjs"
+    },
+    "./vite-plugin": {
+      "types": "./vite-plugin.d.mts",
+      "default": "./vite-plugin.mjs"
+    },
+    "./cli": "./cli.mjs",
+    "./skills/review-loop": "./skills/review-loop/SKILL.md",
+    "./package.json": "./package.json"
+  },
+  "bin": {
+    "page-comments": "./cli.mjs"
+  },
+  "files": [
+    "dist",
+    "src",
+    "skills",
+    "styles.css",
+    "collector.mjs",
+    "collector.d.mts",
+    "vite-plugin.mjs",
+    "vite-plugin.d.mts",
+    "cli.mjs",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": [
+    "*.css"
+  ],
+  "engines": {
+    "node": ">=18.17"
+  },
+  "peerDependencies": {
+    "react": ">=18.3",
+    "vite": ">=5"
+  },
+  "peerDependenciesMeta": {
+    "vite": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.0",
+    "typescript": "^5.9.0",
+    "vite": "^7.0.0"
+  },
+  "scripts": {
+    "build": "tsc --build tsconfig.build.json",
+    "check": "tsc --build tsconfig.build.json --noEmit false",
+    "clean": "rm -rf dist tsconfig.build.tsbuildinfo",
+    "prepublishOnly": "npm run clean && npm run build"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
