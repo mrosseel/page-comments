@@ -1,6 +1,6 @@
 {
   "name": "@mrosseel/page-comments",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "In-page comments for a React site: pick a spot, write a note, see a proposed fix on and off, accept it or send it back.",
   "keywords": [
     "react",
