@@ -1,6 +1,6 @@
 {
   "name": "@mrosseel/page-comments",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "In-page comments for a React site: pick a spot, write a note, see a proposed fix on and off, accept it or send it back.",
   "keywords": [
     "react",
@@ -50,7 +50,7 @@
     "./package.json": "./package.json"
   },
   "bin": {
-    "page-comments": "./cli.mjs"
+    "page-comments": "cli.mjs"
   },
   "files": [
     "dist",
