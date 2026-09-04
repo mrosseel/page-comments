@@ -89,7 +89,8 @@
     "build": "tsc --build tsconfig.build.json",
     "check": "tsc --build tsconfig.build.json --noEmit false",
     "clean": "rm -rf dist tsconfig.build.tsbuildinfo",
-    "prepublishOnly": "npm run clean && npm run build"
+    "prepublishOnly": "npm run clean && npm run build",
+    "prepare": "npm run build"
   },
   "publishConfig": {
     "access": "public"
