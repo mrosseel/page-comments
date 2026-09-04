@@ -1,0 +1,56 @@
+name: publish
+
+# Publishing happens over OIDC, through npm trusted publishing. There is no
+# token in this repository and none in the account: npm checks that the
+# request came from this workflow, in this repository, and mints its own
+# short-lived credential. That is also what lets a maintainer whose 2FA is a
+# security key publish without touching the key.
+#
+# The npm side has to trust this file by name. On npmjs.com, under the
+# package's Settings, add a trusted publisher: GitHub Actions,
+# mrosseel/page-comments, workflow `publish.yml`, no environment.
+#
+# To release: bump the version in package.json, commit, then
+#   git tag v1.2.3 && git push origin main v1.2.3
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      # Mints the OIDC token npm checks. Without it the publish is rejected.
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          registry-url: "https://registry.npmjs.org"
+          cache: npm
+
+      # Trusted publishing needs npm 11.5.1 or later. Pin nothing: the
+      # bundled npm moves with Node, and an older one fails with a message
+      # about a missing token, which is not what is wrong.
+      - run: npm install -g npm@latest
+
+      - run: npm ci
+      - run: npm run build
+
+      # A tag that disagrees with package.json publishes a version nobody
+      # can find from the repository. Cheaper to stop here.
+      - name: The tag and package.json must agree
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          pkg="$(node -p "require('./package.json').version")"
+          if [ "$tag" != "$pkg" ]; then
+            echo "tag $GITHUB_REF_NAME says $tag, package.json says $pkg" >&2
+            exit 1
+          fi
+        if: startsWith(github.ref, 'refs/tags/v')
+
+      - run: npm publish

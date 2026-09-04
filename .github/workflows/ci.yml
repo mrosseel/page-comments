@@ -1,0 +1,26 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      # The two .mjs halves are hand-written, not compiled, so nothing else
+      # would catch a syntax error in them before a consumer did.
+      - run: node --check collector.mjs
+      - run: node --check vite-plugin.mjs
+      - run: node --check cli.mjs
+      # What a consumer actually installs. Fails if `files` misses something
+      # the exports map points at.
+      - run: npm pack --dry-run

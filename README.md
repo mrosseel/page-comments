@@ -198,6 +198,25 @@ finding the running collector, watching the stream, what a worker's brief
 must carry, and which files restart the development server. Read it at
 `skills/review-loop/SKILL.md`.
 
+## Releasing
+
+GitHub Actions publishes on a version tag, over npm trusted publishing. The
+repository holds no npm token and the account needs none: npm checks that the
+request came from `.github/workflows/publish.yml` in this repository and
+mints its own short-lived credential. A maintainer whose 2FA is a security
+key never has to touch it.
+
+```sh
+npm version patch          # or minor, major
+git push origin main --follow-tags
+```
+
+The workflow refuses a tag that disagrees with `package.json`.
+
+Setting this up once, on npmjs.com under the package's Settings, means adding
+a trusted publisher: GitHub Actions, `mrosseel/page-comments`, workflow
+`publish.yml`, no environment.
+
 ## Class names
 
 Every class starts with `feedback-` or `fb-`, and every custom property with
