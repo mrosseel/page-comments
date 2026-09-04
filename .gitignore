@@ -1,3 +1,7 @@
-dist/
+# dist is committed, not ignored, for as long as this package is consumed by
+# git URL. npm runs `prepare` when it packs a git dependency, but a consumer
+# that installs with --ignore-scripts (Nix's buildNpmPackage does) never gets
+# that build. Publishing to npm makes the tarball carry dist and this line
+# can go back to ignoring it.
 *.tsbuildinfo
 node_modules/
